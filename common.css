@@ -1,0 +1,25 @@
+span.req {
+	color: red
+}
+
+.errorMsgList {
+	color: blue
+}
+
+.insert_table th {
+	text-align: left;
+}
+
+.list_table td {
+    width: calc(100%/7);
+	word-break: break-all;
+}
+
+.list_table tr {
+    text-align: left;
+}
+
+.detail_table th {
+	text-align: left;
+	padding-right: 30px;
+}
