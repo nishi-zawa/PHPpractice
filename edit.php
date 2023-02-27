@@ -6,7 +6,9 @@
 	<title>社員編集画面</title>
 	<link rel="stylesheet" type="text/css" href="common.css">
 	<script src="util.js"></script>
-	<?php require_once "util.php"; ?>
+	<?php 
+	require_once "util.php";
+	require_once "const.php"; ?>
 </head>
 <body>
 
@@ -22,40 +24,39 @@ if (!empty($_POST)) {
 		$empGender = $_POST["empGender"];
 	}
 	
-	// 関数内でglobalつければグローバル変数として使える
 	$errMsgArray = array();
-
 	// 必須チェック
-	$errMsgArray = requiredChk("社員ID", $empID, $errMsgArray);
-	$errMsgArray = requiredChk("社員名（姓）", $empFirstname, $errMsgArray);
-	$errMsgArray = requiredChk("社員名（名）", $empLastname, $errMsgArray);
-	$errMsgArray = requiredChk("所属セクション", $empSec, $errMsgArray);
-	$errMsgArray = requiredChk("メールアドレス", $empMail, $errMsgArray);
-	$errMsgArray = requiredChk("性別", $empGender, $errMsgArray);
+	$errMsgArray = requiredChk(MSGKEY_EMPID, $empID, $errMsgArray);
+	$errMsgArray = requiredChk(MSGKEY_EMPFN, $empFirstname, $errMsgArray);
+	$errMsgArray = requiredChk(MSGKEY_EMPLN, $empLastname, $errMsgArray);
+	$errMsgArray = requiredChk(MSGKEY_EMPSEC, $empSec, $errMsgArray);
+	$errMsgArray = requiredChk(MSGKEY_EMPMAIL, $empMail, $errMsgArray);
+	$errMsgArray = requiredChk(MSGKEY_EMPGENDER, $empGender, $errMsgArray);
 
 	// 桁数チェック
-	$errMsgArray = digitsChk("社員ID", $empID, 10, $errMsgArray);
+	$errMsgArray = digitsChk(MSGKEY_EMPID, $empID, DIGITS_EMPID, $errMsgArray);
 
 	// 最大桁数チェック
-	$errMsgArray = maxDigitsChk("社員名（姓）", $empFirstname, 25, $errMsgArray);
-	$errMsgArray = maxDigitsChk("社員名（名）", $empLastname, 25, $errMsgArray);
-	$errMsgArray = maxDigitsChk("メールアドレス", $empMail, 256, $errMsgArray);
+	$errMsgArray = maxDigitsChk(MSGKEY_EMPFN, $empFirstname, MAX_EMPFN, $errMsgArray);
+	$errMsgArray = maxDigitsChk(MSGKEY_EMPLN, $empLastname, MAX_EMPLN, $errMsgArray);
+	$errMsgArray = maxDigitsChk(MSGKEY_EMPMAIL, $empMail, MAX_EMPMAIL, $errMsgArray);
 
 	// 形式チェック
-	$errMsgArray = formatChk("社員ID", "/^YZ[0-9]{8}$/", $empID, $errMsgArray);
-	$errMsgArray = formatChk("所属セクション", "/[123]{1}$/", $empSec, $errMsgArray);
-	$errMsgArray = formatChk("メールアドレス", "/^[a-zA-Z0-9._-]{1,}@[a-zA-Z0-9._-]{1,}$/", $empMail, $errMsgArray);
-	$errMsgArray = formatChk("性別", "/[12]{1}$/", $empGender, $errMsgArray);
+	$errMsgArray = formatChk(MSGKEY_EMPID, REGEX_EMPID, $empID, $errMsgArray);
+	$errMsgArray = formatChk(MSGKEY_EMPSEC, REGEX_EMPSEC, $empSec, $errMsgArray);
+	$errMsgArray = formatChk(MSGKEY_EMPMAIL, REGEX_EMPMAIL, $empMail, $errMsgArray);
+	$errMsgArray = formatChk(MSGKEY_EMPGENDER, REGEX_EMPGENDER, $empGender, $errMsgArray);
+
+	// 重複チェック(社員IDは編集不可なのでチェック無し)
+	// 編集前と同値で無い場合にチェック
+	if ($_SESSION["mail"] != $empMail) {
+		$errMsgArray = duplicateChk(MSGKEY_EMPMAIL, "mail", $empMail, $errMsgArray);
+	}
 
 	// エラーがなければDB登録
 	if (empty($errMsgArray)) {
 		try {
-			$pdo = new PDO(
-				"pgsql:dbname=company_directory;host=localhost", "homestead", "secret"
-			);
-			// エラー時に例外投げるように設定
-			$pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
-
+			
 			$sql =
 				"UPDATE employee SET(
 				employee_id, family_name, first_name, section_id, mail, gender_id
@@ -63,7 +64,7 @@ if (!empty($_POST)) {
 				:employee_id, :family_name, :first_name, :section_id, :mail, :gender_id
 				) WHERE employee_id ="."'".$_SESSION["employee_id"]."'";
 
-			$stmt = $pdo->prepare($sql);
+			$stmt = createStatement($sql);
 			$stmt->bindParam(":employee_id", $empID, PDO::PARAM_STR);
 			$stmt->bindParam(":family_name", $empFirstname, PDO::PARAM_STR);
 			$stmt->bindParam(":first_name", $empLastname, PDO::PARAM_STR);
@@ -72,14 +73,15 @@ if (!empty($_POST)) {
 			$stmt->bindParam(":gender_id", $empGender, PDO::PARAM_STR);
 
 			$result = $stmt->execute();
-			$errorArray = $stmt->errorInfo();
-			if ($errorArray[0] != "00000") {
+
+			if (!$result) {
 				throw new PDOException;
+			} else {
+				$result = true;
 			}
 		} catch(PDOException $e) {
+			logOutput(__FUNCTION__, $stmt->errorInfo());
 			$result = false;
-			print_r($e);
-			exit;
 		}
 
 		$_SESSION["result"] = $result;
@@ -91,9 +93,9 @@ if (!empty($_POST)) {
 ?>
 
 <?php if(!empty($errMsgArray)): ?>
-	<ul class="errorMsgList">
+	<ul id="errorMsgList" class="errorMsgList">
 	<?php foreach($errMsgArray as $value): ?>
-		<li><?php echo $value; ?></li>
+		<?php echo "<li>$value</li>"; ?>
 	<?php endforeach; ?>
 	</ul>
 <?php endif; ?>
@@ -102,7 +104,7 @@ if (!empty($_POST)) {
 	<table class="insert_table">
 		<tr>
 			<th>社員ID<span class="req">*</span></th>
-			<td><input type="text" name="empID" readonly value="<?php echo $_SESSION["employee_id"] ?>"></div></td>
+			<td><input type="text" id="empID" name="empID" readonly value="<?php echo $_SESSION["employee_id"] ?>"></div></td>
 			<p id="errorMsg" name="errorMsg" style="color: red;"></p>
 		</tr>
 		<tr>
@@ -137,10 +139,10 @@ if (!empty($_POST)) {
 	</table>
 
 <p><span class="req">*</span>必須項目</p>
-<p><button type="submit" value="submit" onclick="validate();">更新</button></p>
+<p><button type="submit" value="submit">更新</button></p>
 <p><a href="list.php">社員一覧画面</p>
 <p><a href="index.php">メニュー画面</p>
-</form>
 
+</form>
 </body>
 </html>

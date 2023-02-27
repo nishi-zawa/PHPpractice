@@ -3,7 +3,6 @@
 <html>
 <head>
 <meta charset="UTF-8"> 
-
 <title>登録結果画面</title>
 </head>
 
@@ -43,6 +42,11 @@ switch ($beforeScreen) {
         <li><a href="index.php">メニュー画面</a></li>
 	</ul>
 </p>
+
+<?php
+unset($_SESSION["result"]);
+unset($_SESSION["beforeScreen"]);
+?>
 
 </body>
 </html>

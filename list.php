@@ -1,5 +1,4 @@
 <!doctype html>
-<?php session_start(); ?>
 <html>
 <head>
 	<meta charset="UTF-8"> 
@@ -13,15 +12,19 @@
 require_once "util.php";
 
 // DBからデータ取得
-$conn = pg_connect("host=localhost dbname=company_directory user=homestead password=secret");
-if (!$conn) {
-	exit;
-}
-$sql = "SELECT * FROM employee ORDER BY employee_id";
-$result = pg_query($conn, $sql);
-pg_close($conn);
-// 取得結果を多次元配列で保持
-$rows_all = pg_fetch_all($result);
+try {
+	$rows_all = array();
+	$sql = "SELECT * FROM employee ORDER BY employee_id";
+	$stmt = createStatement($sql);
+	$result = $stmt->execute();
+
+	if ($result) {
+		// FETCH_ASSOC指定しないとセッション詰めるところでエラー出る
+		$rows_all = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
+} catch (PDOException $e) {
+	logOutput(__FUNCTION__, $stmt->errorInfo());
+};
 ?>
 
 <form action="" method="get">

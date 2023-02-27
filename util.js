@@ -1,5 +1,12 @@
 function validate() {
+    // エラーメッセージ削除
     document.getElementById("errorMsg").innerHTML = ""
+    var errorMsgList = document.getElementById("errorMsgList")
+    if (null != errorMsgList) {
+        while(errorMsgList.firstChild) {
+            errorMsgList.removeChild(errorMsgList.firstChild)
+        }
+    }
 
     var empId = document.getElementById("empID").value
     var firstName = document.getElementById("empFirstname").value
@@ -17,7 +24,6 @@ function validate() {
     submitFlg = mailValidate(mail, submitFlg)
     submitFlg = genderValidate(gender, submitFlg)
 
-    console.log(submitFlg)
     return submitFlg
 }
 
@@ -38,8 +44,8 @@ function firstNameValidate(firstName, submitFlg) {
     var msg = ""
     if (!firstName) {
         msg = "社員名（姓）を入力してください"
-    } else if (firstName.length > 25) {
-        msg = "社員名（姓）は25文字以内で入力してください"
+    } else if (firstName.length > 20) {
+        msg = "社員名（姓）は20文字以内で入力してください"
     }
     var result = errorChk(msg, submitFlg)
     return result
@@ -49,8 +55,8 @@ function lastNameValidate(lastName, submitFlg) {
     var msg = ""
     if (!lastName) {
         msg = "社員名（名）を入力してください"
-    } else if (lastName.length > 25) {
-        msg = "社員名（名）は25文字以内で入力してください"
+    } else if (lastName.length > 20) {
+        msg = "社員名（名）は20文字以内で入力してください"
     }
     var result = errorChk(msg, submitFlg)
     return result

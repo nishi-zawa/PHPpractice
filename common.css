@@ -10,6 +10,26 @@ span.req {
 	text-align: left;
 }
 
+.insert_input_empId {
+	width: 255px;
+}
+
+.insert_input_empFirstname {
+	width:120px;
+}
+
+.insert_input_empLastname {
+	width: 120px;
+}
+
+.insert_input_empSec {
+	width: 260px;
+}
+
+.insert_input_empMail {
+	width: 255px;
+}
+
 .list_table td {
     width: calc(100%/7);
 	word-break: break-all;

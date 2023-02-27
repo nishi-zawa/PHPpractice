@@ -57,4 +57,43 @@ function formatChk($key, $format, $target, $errMsgArray) {
 	return $errMsgArray;
 };
 
-?>
+function duplicateChk($key, $column, $target, $errMsgArray) {
+	
+	try {
+		$sql = "SELECT count(".$column." = :target or null) FROM employee";
+		$stmt = createStatement($sql);
+		$stmt->bindParam(":target", $target, PDO::PARAM_STR);
+		
+		$stmt->execute();
+		if ($stmt->fetchColumn() != 0) {
+			$errMsgArray[] = "入力した".$key."はすでに登録されています";
+		};
+	} catch(PDOException $e) {
+		logOutput(__FUNCTION__, $stmt->errorInfo());
+	};
+	return $errMsgArray;
+};
+
+function logOutput($method, $log) {
+	$path = "/home/vagrant/code/Laravel/storage/logs/testlog.log";
+	date_default_timezone_set('Asia/Tokyo');
+	$currentDate = date("m/d H:i:s");
+	$outputLog = $currentDate.":".$method.":".print_r($log);
+
+	error_log($outputLog."\n", 3, $path);
+}
+
+function createStatement($sql) {
+	$pdo = createPDO();
+	$stmt = $pdo->prepare($sql);
+	return $stmt;
+}
+
+function createPDO() {
+	$pdo = new PDO(
+		"pgsql:dbname=company_directory;host=localhost", "homestead", "secret"
+	);
+	// エラー時に例外投げるように設定
+	$pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+	return $pdo;
+}
