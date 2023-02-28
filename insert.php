@@ -15,8 +15,8 @@
 <?php
 if (!empty($_POST)) {
 	$empID = $_POST["empID"];
+	$empFamilyname = $_POST["empFamilyname"];
 	$empFirstname = $_POST["empFirstname"];
-	$empLastname = $_POST["empLastname"];
 	$empSec = $_POST["empSec"];
 	$empMail = $_POST["empMail"];
 	$empGender = "";
@@ -25,31 +25,34 @@ if (!empty($_POST)) {
 	}
 	
 	$errMsgArray = array();
-	// 必須チェック
+	// 各項目入力チェック
+	// 社員ID
 	$errMsgArray = requiredChk(MSGKEY_EMPID, $empID, $errMsgArray);
-	$errMsgArray = requiredChk(MSGKEY_EMPFN, $empFirstname, $errMsgArray);
-	$errMsgArray = requiredChk(MSGKEY_EMPLN, $empLastname, $errMsgArray);
-	$errMsgArray = requiredChk(MSGKEY_EMPSEC, $empSec, $errMsgArray);
-	$errMsgArray = requiredChk(MSGKEY_EMPMAIL, $empMail, $errMsgArray);
-	$errMsgArray = requiredChk(MSGKEY_EMPGENDER, $empGender, $errMsgArray);
-
-	// 桁数チェック
 	$errMsgArray = digitsChk(MSGKEY_EMPID, $empID, DIGITS_EMPID, $errMsgArray);
-
-	// 最大桁数チェック
-	$errMsgArray = maxDigitsChk(MSGKEY_EMPFN, $empFirstname, MAX_EMPFN, $errMsgArray);
-	$errMsgArray = maxDigitsChk(MSGKEY_EMPLN, $empLastname, MAX_EMPLN, $errMsgArray);
-	$errMsgArray = maxDigitsChk(MSGKEY_EMPMAIL, $empMail, MAX_EMPMAIL, $errMsgArray);
-
-	// 形式チェック
 	$errMsgArray = formatChk(MSGKEY_EMPID, REGEX_EMPID, $empID, $errMsgArray);
-	$errMsgArray = formatChk(MSGKEY_EMPSEC, REGEX_EMPSEC, $empSec, $errMsgArray);
-	$errMsgArray = formatChk(MSGKEY_EMPMAIL, REGEX_EMPMAIL, $empMail, $errMsgArray);
-	$errMsgArray = formatChk(MSGKEY_EMPGENDER, REGEX_EMPGENDER, $empGender, $errMsgArray);
-
-	// 重複チェック
 	$errMsgArray = duplicateChk(MSGKEY_EMPID, "employee_id", $empID, $errMsgArray);
+
+	// 社員名（姓）
+	$errMsgArray = requiredChk(MSGKEY_EMPFN, $empFamilyname, $errMsgArray);
+	$errMsgArray = maxDigitsChk(MSGKEY_EMPFN, $empFamilyname, MAX_EMPFN, $errMsgArray);
+
+	// 社員名（名）
+	$errMsgArray = requiredChk(MSGKEY_EMPLN, $empFirstname, $errMsgArray);
+	$errMsgArray = maxDigitsChk(MSGKEY_EMPLN, $empFirstname, MAX_EMPLN, $errMsgArray);
+
+	// 所属セクション
+	$errMsgArray = requiredChk(MSGKEY_EMPSEC, $empSec, $errMsgArray);
+	$errMsgArray = formatChk(MSGKEY_EMPSEC, REGEX_EMPSEC, $empSec, $errMsgArray);
+
+	// メールアドレス
+	$errMsgArray = requiredChk(MSGKEY_EMPMAIL, $empMail, $errMsgArray);
+	$errMsgArray = maxDigitsChk(MSGKEY_EMPMAIL, $empMail, MAX_EMPMAIL, $errMsgArray);
+	$errMsgArray = formatChk(MSGKEY_EMPMAIL, REGEX_EMPMAIL, $empMail, $errMsgArray);
 	$errMsgArray = duplicateChk(MSGKEY_EMPMAIL, "mail", $empMail, $errMsgArray);
+
+	// 性別
+	$errMsgArray = requiredChk(MSGKEY_EMPGENDER, $empGender, $errMsgArray);
+	$errMsgArray = formatChk(MSGKEY_EMPGENDER, REGEX_EMPGENDER, $empGender, $errMsgArray);
 
 	// エラーがなければDB登録
 	if (empty($errMsgArray)) {
@@ -62,8 +65,8 @@ if (!empty($_POST)) {
 				)";
 			$stmt = createStatement($sql);
 			$stmt->bindParam(":employee_id", $empID, PDO::PARAM_STR);
-			$stmt->bindParam(":family_name", $empFirstname, PDO::PARAM_STR);
-			$stmt->bindParam(":first_name", $empLastname, PDO::PARAM_STR);
+			$stmt->bindParam(":family_name", $empFamilyname, PDO::PARAM_STR);
+			$stmt->bindParam(":first_name", $empFirstname, PDO::PARAM_STR);
 			$stmt->bindParam(":section_id", $empSec, PDO::PARAM_STR);
 			$stmt->bindParam(":mail", $empMail, PDO::PARAM_STR);
 			$stmt->bindParam(":gender_id", $empGender, PDO::PARAM_STR);
@@ -100,13 +103,13 @@ if (!empty($_POST)) {
 	<table class="insert_table">
 		<tr>
 			<th>社員ID<span class="req">*</span></th>
-			<td colspan="2"><input type="text" class="insert_input_empId" id="empID" name="empID" placeholder="YZ12345678"></td>
+			<td colspan="2"><input type="text" class="insert_input_empId" id="empID" name="empID" placeholder="例）YZ12345678"></td>
 			<p id="errorMsg" name="errorMsg" style="color: red;"></p>
 		</tr>
 		<tr>
 			<th>社員名<span class="req">*</span></th>
-			<td><input type="text" class="insert_input_empFirstname" id="empFirstname" name="empFirstname" placeholder="姓"></td>
-			<td><input type="text" class="insert_input_empLastname" id="empLastname" name="empLastname" placeholder="名"></td>
+			<td><input type="text" class="insert_input_empFamilyname" id="empFamilyname" name="empFamilyname" placeholder="姓"></td>
+			<td><input type="text" class="insert_input_empFirstname" id="empFirstname" name="empFirstname" placeholder="名"></td>
 		</tr>
 		<tr>
 			<th>所属セクション<span class="req">*</span></th>
@@ -121,7 +124,7 @@ if (!empty($_POST)) {
 		</tr>
 		<tr>
 			<th>メールアドレス<span class="req">*</span></th>
-			<td colspan="2"><input type="text" class="insert_input_empMail" id="empMail" name="empMail" placeholder="taro_yaz@yaz.co.jp"></td>
+			<td colspan="2"><input type="text" class="insert_input_empMail" id="empMail" name="empMail" placeholder="例）taro_yaz@yaz.co.jp"></td>
 		</tr>
 		<tr>
 			<th>性別<span class="req">*</span></th>

@@ -15,8 +15,8 @@
 <?php
 if (!empty($_POST)) {
 	$empID = $_POST["empID"];
+	$empFamilyname = $_POST["empFamilyname"];
 	$empFirstname = $_POST["empFirstname"];
-	$empLastname = $_POST["empLastname"];
 	$empSec = $_POST["empSec"];
 	$empMail = $_POST["empMail"];
 	$empGender = "";
@@ -25,33 +25,36 @@ if (!empty($_POST)) {
 	}
 	
 	$errMsgArray = array();
-	// 必須チェック
+	// 各項目入力チェック
+	// 社員ID
 	$errMsgArray = requiredChk(MSGKEY_EMPID, $empID, $errMsgArray);
-	$errMsgArray = requiredChk(MSGKEY_EMPFN, $empFirstname, $errMsgArray);
-	$errMsgArray = requiredChk(MSGKEY_EMPLN, $empLastname, $errMsgArray);
-	$errMsgArray = requiredChk(MSGKEY_EMPSEC, $empSec, $errMsgArray);
-	$errMsgArray = requiredChk(MSGKEY_EMPMAIL, $empMail, $errMsgArray);
-	$errMsgArray = requiredChk(MSGKEY_EMPGENDER, $empGender, $errMsgArray);
-
-	// 桁数チェック
 	$errMsgArray = digitsChk(MSGKEY_EMPID, $empID, DIGITS_EMPID, $errMsgArray);
-
-	// 最大桁数チェック
-	$errMsgArray = maxDigitsChk(MSGKEY_EMPFN, $empFirstname, MAX_EMPFN, $errMsgArray);
-	$errMsgArray = maxDigitsChk(MSGKEY_EMPLN, $empLastname, MAX_EMPLN, $errMsgArray);
-	$errMsgArray = maxDigitsChk(MSGKEY_EMPMAIL, $empMail, MAX_EMPMAIL, $errMsgArray);
-
-	// 形式チェック
 	$errMsgArray = formatChk(MSGKEY_EMPID, REGEX_EMPID, $empID, $errMsgArray);
-	$errMsgArray = formatChk(MSGKEY_EMPSEC, REGEX_EMPSEC, $empSec, $errMsgArray);
-	$errMsgArray = formatChk(MSGKEY_EMPMAIL, REGEX_EMPMAIL, $empMail, $errMsgArray);
-	$errMsgArray = formatChk(MSGKEY_EMPGENDER, REGEX_EMPGENDER, $empGender, $errMsgArray);
 
-	// 重複チェック(社員IDは編集不可なのでチェック無し)
-	// 編集前と同値で無い場合にチェック
+	// 社員名（姓）
+	$errMsgArray = requiredChk(MSGKEY_EMPFN, $empFamilyname, $errMsgArray);
+	$errMsgArray = maxDigitsChk(MSGKEY_EMPFN, $empFamilyname, MAX_EMPFN, $errMsgArray);
+
+	// 社員名（名）
+	$errMsgArray = requiredChk(MSGKEY_EMPLN, $empFirstname, $errMsgArray);
+	$errMsgArray = maxDigitsChk(MSGKEY_EMPLN, $empFirstname, MAX_EMPLN, $errMsgArray);
+
+	// 所属セクション
+	$errMsgArray = requiredChk(MSGKEY_EMPSEC, $empSec, $errMsgArray);
+	$errMsgArray = formatChk(MSGKEY_EMPSEC, REGEX_EMPSEC, $empSec, $errMsgArray);
+
+	// メールアドレス
+	$errMsgArray = requiredChk(MSGKEY_EMPMAIL, $empMail, $errMsgArray);
+	$errMsgArray = maxDigitsChk(MSGKEY_EMPMAIL, $empMail, MAX_EMPMAIL, $errMsgArray);
+	$errMsgArray = formatChk(MSGKEY_EMPMAIL, REGEX_EMPMAIL, $empMail, $errMsgArray);
+	// 編集前と同値で無い場合に重複チェック
 	if ($_SESSION["mail"] != $empMail) {
 		$errMsgArray = duplicateChk(MSGKEY_EMPMAIL, "mail", $empMail, $errMsgArray);
 	}
+
+	// 性別
+	$errMsgArray = requiredChk(MSGKEY_EMPGENDER, $empGender, $errMsgArray);
+	$errMsgArray = formatChk(MSGKEY_EMPGENDER, REGEX_EMPGENDER, $empGender, $errMsgArray);
 
 	// エラーがなければDB登録
 	if (empty($errMsgArray)) {
@@ -66,8 +69,8 @@ if (!empty($_POST)) {
 
 			$stmt = createStatement($sql);
 			$stmt->bindParam(":employee_id", $empID, PDO::PARAM_STR);
-			$stmt->bindParam(":family_name", $empFirstname, PDO::PARAM_STR);
-			$stmt->bindParam(":first_name", $empLastname, PDO::PARAM_STR);
+			$stmt->bindParam(":family_name", $empFamilyname, PDO::PARAM_STR);
+			$stmt->bindParam(":first_name", $empFirstname, PDO::PARAM_STR);
 			$stmt->bindParam(":section_id", $empSec, PDO::PARAM_STR);
 			$stmt->bindParam(":mail", $empMail, PDO::PARAM_STR);
 			$stmt->bindParam(":gender_id", $empGender, PDO::PARAM_STR);
@@ -109,8 +112,8 @@ if (!empty($_POST)) {
 		</tr>
 		<tr>
 			<th>社員名<span class="req">*</span></th>
-			<td><input type="text" id="empFirstname" name="empFirstname" value="<?php echo $_SESSION["family_name"] ?>"></td>
-			<td><input type="text" id="empLastname" name="empLastname" value="<?php echo $_SESSION["first_name"] ?>"></td>
+			<td><input type="text" id="empFamilyname" name="empFamilyname" value="<?php echo $_SESSION["family_name"] ?>"></td>
+			<td><input type="text" id="empFirstname" name="empFirstname" value="<?php echo $_SESSION["first_name"] ?>"></td>
 		</tr>
 		<tr>
 			<?php $section_id = $_SESSION["section_id"] ?>

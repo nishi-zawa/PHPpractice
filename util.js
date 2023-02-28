@@ -9,8 +9,8 @@ function validate() {
     }
 
     var empId = document.getElementById("empID").value
+    var familyName = document.getElementById("empFamilyname").value
     var firstName = document.getElementById("empFirstname").value
-    var lastName = document.getElementById("empLastname").value
     var empSec = document.getElementById("empSec").value
     var mail = document.getElementById("empMail").value
     // ラジオボタンが上手く取れないので↓だけ取り方違う
@@ -18,8 +18,8 @@ function validate() {
 
     var submitFlg = true
     submitFlg = empIdValidate(empId, submitFlg)
+    submitFlg = familyNameValidate(familyName, submitFlg)
     submitFlg = firstNameValidate(firstName, submitFlg)
-    submitFlg = lastNameValidate(lastName, submitFlg)
     submitFlg = empSecValidate(empSec, submitFlg)
     submitFlg = mailValidate(mail, submitFlg)
     submitFlg = genderValidate(gender, submitFlg)
@@ -40,22 +40,22 @@ function empIdValidate(empId, submitFlg) {
     return result
 }
 
-function firstNameValidate(firstName, submitFlg) {
+function familyNameValidate(familyName, submitFlg) {
     var msg = ""
-    if (!firstName) {
+    if (!familyName) {
         msg = "社員名（姓）を入力してください"
-    } else if (firstName.length > 20) {
+    } else if (familyName.length > 20) {
         msg = "社員名（姓）は20文字以内で入力してください"
     }
     var result = errorChk(msg, submitFlg)
     return result
 }
 
-function lastNameValidate(lastName, submitFlg) {
+function firstNameValidate(firstName, submitFlg) {
     var msg = ""
-    if (!lastName) {
+    if (!firstName) {
         msg = "社員名（名）を入力してください"
-    } else if (lastName.length > 20) {
+    } else if (firstName.length > 20) {
         msg = "社員名（名）は20文字以内で入力してください"
     }
     var result = errorChk(msg, submitFlg)
